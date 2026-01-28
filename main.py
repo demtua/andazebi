@@ -10,7 +10,7 @@ entered_word=None
 gamocnobili_asoebi = []
 andaza = None
 defisiani = ''
-araswori = []
+araswori = 0
 
 db = DB()
 
@@ -23,7 +23,6 @@ def show_word(aso, andaza):
 
 def start_game():
     print("გამოსაცნობი სიტყვა მზადაა!")
-    print("შეიყვანეთ ასო ან 'exit' გამოსასვლელად")
 
     andaza = db.get_random_andaza()[0]
     db.update_last_date(andaza)
@@ -34,27 +33,41 @@ def start_game():
     )
 
     return andaza, masked
+
+
+print("შეიყვანეთ ასო ან 'exit' გამოსასვლელად")
 andaza, defisiani = start_game()
     
 while entered_word != 'exit':
     print()
     print(defisiani)
     print()
-    print(f"სიცოცხლე: {5-len(araswori)}")
+    print(f"სიცოცხლე: {5-araswori}")
     entered_letter = input(f"შეიყვანეთ ასო ან 'exit' გამოსასვლელად  ")
+    gamocnobili_asoebi.append(entered_letter)
+    #arasworad gamocnoba
     if not entered_letter in andaza:
         print()
         print(f'არასწორი ასო {entered_letter}')
         print()
-        araswori.append(entered_letter)
-    gamocnobili_asoebi.append(entered_letter)
+        araswori+=1
+
+
+    
     defisiani = show_word(entered_letter, andaza)
-        
-    if len(araswori) < 1:
+    
+    #wagebis cheki
+    if 5 - araswori == 0:
 
         print('თქვენ დამარცხდით')
         
         print()
-        print()
-        start_game()
+
+        again = input("გსურთ თავიდან თამაში? აკრიფეთ 'კი' ")
+        if again == 'კი':
+            andaza, defisiani = start_game()
+        else:
+            entered_word = 'exit'
+            print()
+            print('თქვენ გახვედით თამაშიდან')
     
