@@ -1,73 +1,53 @@
+from kivy.app import App
+from kivy.uix.screenmanager import ScreenManager
+from kivy.properties import ListProperty, StringProperty, NumericProperty
+from kivy.uix.dropdown import DropDown
+from kivy.uix.button import Button
 from DB.db_manager import DB
-import unicodedata
+from screens.game_screen import GameScreen
+from screens.menu_screen import MenuScreen
+import os
+import sys
 
 
 
-
-
-
-entered_word=None
-gamocnobili_asoebi = []
-andaza = None
-defisiani = ''
-araswori = 0
-
-db = DB()
-
-def show_word(aso, andaza):
-    return ''.join(
-        a if (a == aso or a in gamocnobili_asoebi) else '_'
-        if a.isalpha() else a
-        for a in andaza
-    )
-
-def start_game():
-    print("გამოსაცნობი სიტყვა მზადაა!")
-
-    andaza = db.get_random_andaza()[0]
-    db.update_last_date(andaza)
-
-    masked = ''.join(
-        '_' if x.isalpha() else ' ' if x == ' ' else x
-        for x in andaza
-    )
-
-    return andaza, masked
-
-
-print("შეიყვანეთ ასო ან 'exit' გამოსასვლელად")
-andaza, defisiani = start_game()
+class HangmanApp(App):
     
-while entered_word != 'exit':
-    print()
-    print(defisiani)
-    print()
-    print(f"სიცოცხლე: {5-araswori}")
-    entered_letter = input(f"შეიყვანეთ ასო ან 'exit' გამოსასვლელად  ")
-    gamocnobili_asoebi.append(entered_letter)
-    #arasworad gamocnoba
-    if not entered_letter in andaza:
-        print()
-        print(f'არასწორი ასო {entered_letter}')
-        print()
-        araswori+=1
+    timer_time = NumericProperty(10)
 
 
-    
-    defisiani = show_word(entered_letter, andaza)
-    
-    #wagebis cheki
-    if 5 - araswori == 0:
+    def build(self):
+        self.title = 'ანდაზები'
+        self.sm = ScreenManager()
+        self.db = DB()
 
-        print('თქვენ დამარცხდით')
+        self.game_screen = GameScreen(name='game_screen')
+        self.menu_screen = MenuScreen(name='menu_screen')
+        self.sm.add_widget(self.menu_screen)
+        self.sm.add_widget(self.game_screen)
         
-        print()
-
-        again = input("გსურთ თავიდან თამაში? აკრიფეთ 'კი' ")
-        if again == 'კი':
-            andaza, defisiani = start_game()
-        else:
-            entered_word = 'exit'
-            print()
-            print('თქვენ გახვედით თამაშიდან')
+        return self.sm
     
+    def resource_path(self, relative_path):
+        if hasattr(sys, "_MEIPASS"):
+            return os.path.join(sys._MEIPASS, relative_path)
+        return os.path.join(os.path.abspath("."), relative_path)
+    
+
+    def on_time_select(self, text):
+        if text == "10:00":
+            self.timer_time = 600
+        elif text == "5:00":
+            self.timer_time = 300
+        elif text == "3:00":
+            self.timer_time = 180
+
+
+
+        
+
+
+  
+
+
+HangmanApp().run()

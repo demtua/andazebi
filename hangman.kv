@@ -1,0 +1,102 @@
+#:include 'screens/menu_screen.kv'
+<GameScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        BoxLayout:
+            size_hint_y: 0.05
+            Label:
+                text: f'დრო: {root.timer}'
+                font_size: sp(16)
+                halign: "center"
+                font_name:'DejaVuSans.ttf'#app.resource_path('assets/BPG2.ttf')
+                valign: "middle"
+                text_size: self.size
+            Label:
+                text: f'ქულა: {root.score}'
+                font_size: sp(16)                
+                halign: "center"
+                font_name:'DejaVuSans.ttf'#app.resource_path('assets/BPG2.ttf')
+                valign: "middle"
+                text_size: self.size
+        Label:
+            text: root.defisiani
+            font_size: sp(32)
+            size_hint_y: 0.25
+            halign: "center"
+            font_name:app.resource_path('assets/BPG2.ttf')
+            valign: "middle"
+            text_size: self.size
+
+        Image:
+            source: app.resource_path(f'assets/lives/{root.mistake}.png')
+            size_hint_y: 0.45
+            allow_stretch: True
+            keep_ratio: True
+
+        BoxLayout:
+            id: keyboard_layout
+            size_hint_y: 0.4
+
+            
+
+
+
+
+<Notifier>:
+    size_hint:None,None
+    size_hint: 0.6, 0.3
+    BoxLayout:
+        orientation:"vertical"
+        Label:
+            text : root.text
+            halign:"center"
+            valign:"center"
+            font_name:app.resource_path('assets/BPG2.ttf')
+            text_size:self.size
+        
+        BoxLayout:
+            Button:
+                size_hint:1,None
+                height:dp(50)
+                text:'გააგრძელე'
+                on_release:
+                    root.cont()
+                    root.dismiss()
+                font_name:app.resource_path('assets/BPG2.ttf')
+            # Button:
+            #     text:'დახურვა'
+            #     on_release:root.dismiss()
+
+
+<TimeUp>:
+    title:"დრო ამოიწურა"
+    size_hint:0.6,0.3
+    BoxLayout:
+        orientation:'vertical'
+        Label:
+            text:f'თქვენი ქულა არის {root.score}'
+            font_name:app.resource_path('assets/BPG2.ttf')
+        Label:
+            text:'შეიყვანეთ სახელი'
+            font_name:app.resource_path('assets/BPG2.ttf')
+        TextInput:
+            id:name
+            hint_text:'გოჩა'
+            font_name:app.resource_path('assets/BPG2.ttf')
+        BoxLayout:
+            size_hint:1,None
+            height:dp(50)
+            Button:
+                text:'ქულის დამახსოვრება'
+                font_name:app.resource_path('assets/BPG2.ttf')
+                on_release:app.db.add_score(name.text, root.score, app.timer_time)
+
+            Button:
+                text:'თავიდან დაწყება'
+                font_name:app.resource_path('assets/BPG2.ttf')
+                on_release:
+                    app.game_screen.time_restart()
+                    root.dismiss()
+            
+            

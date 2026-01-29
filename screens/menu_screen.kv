@@ -1,0 +1,32 @@
+<MenuScreen>:
+    BoxLayout:
+        orientation:'vertical'
+        padding:dp(150),0,dp(120),dp(120)
+        BoxLayout:
+            orientation:'vertical'
+            padding:dp(50), 20
+            spacing:dp(20)
+            Label:
+                text: f'აირჩიეთ რაუნდის ხანგრძლივობა'
+                font_size: sp(12)
+                halign: "center"
+                font_name:'DejaVuSans.ttf'#app.resource_path('assets/BPG2.ttf')
+                valign: "middle"
+                text_size: self.size
+            Spinner:
+                size_hint:1, 0.5
+                text: "5:00"
+                values: ["10:00", "5:00", "3:00" ]
+                on_text: app.on_time_select(self.text)
+                font_name:'assets/BPG2.ttf'
+        BoxLayout:
+            orientation:"vertical"
+            spacing:dp(10)
+            Button:
+                text:'თამაშის დაწყება'
+                on_release:app.sm.switch_to(app.game_screen)
+                font_name:app.resource_path('assets/BPG2.ttf')
+            Button:
+                text:'ლიდერბორდი'
+                on_release:app.sm.switch_to(app.game_screen)
+                font_name:app.resource_path('assets/BPG2.ttf')
