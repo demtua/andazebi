@@ -196,11 +196,11 @@ class Notifier(Popup):
     def cont(self):
         App.get_running_app().game_screen.start_game()
         
-    
     def resource_path(self, relative_path):
         if hasattr(sys, "_MEIPASS"):
             return os.path.join(sys._MEIPASS, relative_path)
         return os.path.join(os.path.abspath("."), relative_path)
+    
     
 
 
@@ -208,3 +208,10 @@ class TimeUp(Popup):
     score = StringProperty()
     def update(self, score):
         self.score = score
+        self.title_font = self.resource_path("assets/BPG2.ttf")
+    
+    def resource_path(self, relative_path):
+        if hasattr(sys, "_MEIPASS"):
+            return os.path.join(sys._MEIPASS, relative_path)
+        return os.path.join(os.path.abspath("."), relative_path)
+    
