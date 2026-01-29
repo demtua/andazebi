@@ -1,8 +1,15 @@
 #:include 'screens/menu_screen.kv'
 <GameScreen>:
+    Button:
+        size_hint:0.1,None
+        pos_hint:{"top":1}
+        height:dp(50)
+        text:'back'
+        on_release:app.sm.switch_to(app.menu_screen)
     BoxLayout:
         orientation: 'vertical'
         padding: dp(20)
+        
         BoxLayout:
             size_hint_y: 0.05
             Label:
@@ -90,8 +97,9 @@
             Button:
                 text:'ქულის დამახსოვრება'
                 font_name:app.resource_path('assets/BPG2.ttf')
-                on_release:app.db.add_score(name.text, root.score, app.timer_time)
-
+                on_release:
+                    app.db.add_score(name.text, root.score, app.timer_time)
+                    root.dismiss()
             Button:
                 text:'თავიდან დაწყება'
                 font_name:app.resource_path('assets/BPG2.ttf')

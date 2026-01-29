@@ -80,10 +80,10 @@ class DB:
         self.connection.commit()
     
 
-    def add_score(self, score, name, time):
+    def add_score(self, score, name, play_time):
         self.cursor.execute(f'''
             INSERT INTO liderboard (score, name, time) VALUES (?, ?, ?) 
-        ''', (score, name, time ))
+        ''', (score, name, play_time ))
         self.connection.commit()
 
     def get_all_andaza(self):
@@ -105,9 +105,10 @@ class DB:
         return all
     
     def get_liderboard(self):
-        self.cursor.execute('SELECT * FROM liderboard')
-        all = self.cursor.fetchone()
-        return all
+        self.cursor.execute(
+            "SELECT name, score, time FROM liderboard ORDER BY score DESC"
+        )
+        return self.cursor.fetchall()
 
     def update_last_date(self, andaza):
         date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
