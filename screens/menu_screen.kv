@@ -2,16 +2,16 @@
     name:'menu_screen'
     BoxLayout:
         orientation:'vertical'
-        padding:dp(120),0,dp(120),dp(120)
+        padding:dp(120),0,dp(120),dp(80)
         spacing:dp(40)
-        Button:
-            text:'ანდაზები'
-
+        Image:
+            source:app.resource_path('assets/bg.png')
+            size_hint:1,0.4
         BoxLayout:
             orientation:'vertical'
             padding:dp(50),dp(20)
             spacing:dp(20)
-            size_hint:1,None            
+            size_hint:1,None          
             height:dp(120)
             Label:
                 text: f'აირჩიეთ რაუნდის ხანგრძლივობა'
@@ -26,22 +26,22 @@
                 text: "5:00"
                 values: ["10:00", "5:00", "3:00" ]
                 on_text: app.on_time_select(self.text)
-                font_name:'assets/BPG2.ttf'
+                font_name:app.resource_path('assets/BPG2.ttf')
 
         BoxLayout:
             orientation:"vertical"
             spacing:dp(10)
-            size_hint:1,None
+            size_hint:1,0.4
             height:dp(200)
             Button:
                 text:'თამაშის დაწყება'
                 size_hint:1,None
-                height:dp(100)
+                height:dp(80)
                 on_release:app.sm.switch_to(app.game_screen)
                 font_name:app.resource_path('assets/BPG2.ttf')
             Button:
                 text:'ლიდერბორდი'
                 size_hint:1,None
-                height:dp(100)
+                height:dp(80)
                 on_release:app.sm.switch_to(app.liderboard_screen)
                 font_name:app.resource_path('assets/BPG2.ttf')
