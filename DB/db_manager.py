@@ -3,7 +3,7 @@ import datetime
 import os
 import sys
 import shutil
-
+from firebase import OnlineLeaderboard
 
 def get_db_path():
     db_name = "andaza.db"
@@ -18,7 +18,7 @@ def get_db_path():
 
     # 2. Define where the writable (persistent) DB should live
     # This creates a folder in C:\Users\Name\AppData\Roaming\YourAppName
-    app_data_dir = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), "YourGameName")
+    app_data_dir = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), "Andaza")
     os.makedirs(app_data_dir, exist_ok=True)
     
     dest_db = os.path.join(app_data_dir, db_name)
@@ -35,8 +35,7 @@ class DB:
         self.db_path = get_db_path()
         self.connection = sqlite3.connect(self.db_path)
         self.cursor = self.connection.cursor()
-        self.create_tables()
-        self.migrate_database()
+        self.online_liderboard = OnlineLeaderboard()
         self.setup_database()
         self.create_missing_tables()
 
@@ -51,6 +50,12 @@ class DB:
                 name TEXT,
                 score INTEGER,
                 time TEXT
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS game (
+                
+                time_choice INTEGER DEFAULT  500
             )
         """)
         self.connection.commit()
@@ -81,20 +86,48 @@ class DB:
     
 
     def add_score(self, score, name, play_time):
-        self.cursor.execute(f'''
-            INSERT INTO liderboard (score, name, time) VALUES (?, ?, ?) 
-        ''', (score, name, play_time ))
+        # 1. Check if name exists
+        self.cursor.execute('SELECT score FROM liderboard WHERE name = ?', (name,))
+        result = self.cursor.fetchone()
+
+        if result:
+            # 2. Update if score is higher
+            if score > result[0]:
+                self.cursor.execute('''
+                    UPDATE liderboard 
+                    SET score = ?, time = ?, is_synced = 0 
+                    WHERE name = ?
+                ''', (score, play_time, name))
+        else:
+            # 3. Insert if new
+            self.cursor.execute('''
+                INSERT INTO liderboard (name, score, time, is_synced) 
+                VALUES (?, ?, ?, 0)
+            ''', (name, score, play_time))
+        
         self.connection.commit()
 
+        if self.cursor.rowcount > 0:
+            self.online_manager.sync_score(name, score, play_time, self.mark_as_synced)
+            
     def get_all_andaza(self):
         self.cursor.execute('SELECT * FROM andaza')
         all = self.cursor.fetchall()
         return all
     
-    def get_selected_time(self):
+    def get_time_choice(self):
         self.cursor.execute('SELECT time_choice FROM game')
-        time = self.cursor.fetchone()[0]
-        return time
+        time = self.cursor.fetchone()
+        if time:
+            return time[0]
+        else:
+            return 300
+    
+    def update_time_choice(self, time):
+        self.cursor.execute('''
+            UPDATE game SET time_choice = ? 
+        ''', (time,))
+        self.connection.commit()
 
     def close(self):
         self.connection.close()
@@ -132,63 +165,49 @@ class DB:
                 print(f"Error clearing data: {e}")
     
 
-    def migrate_database(self):
-        cursor = self.connection.cursor()
-        
-        # This command creates the table ONLY if it's missing
-        # Replace 'new_table_name' and columns with your actual data
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS settings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_name TEXT,
-                sound_enabled INTEGER DEFAULT 1
-            )
-        """)
-        
-        # If you just added a NEW COLUMN to an existing table:
-        try:
-            cursor.execute("ALTER TABLE scores ADD COLUMN difficulty TEXT DEFAULT 'easy'")
-        except sqlite3.OperationalError:
-            # If the column already exists, SQLite throws an error, which we ignore
-            pass
-            
+   
+    def get_unsynced_scores(self):
+        """Finds scores that need to go to the cloud."""
+        self.cursor.execute("SELECT name, score, time FROM liderboard WHERE is_synced = 0")
+        return self.cursor.fetchall()
+
+    def mark_as_synced(self, name):
+        """Updates local DB so we don't sync this person again."""
+        self.cursor.execute("UPDATE liderboard SET is_synced = 1 WHERE name = ?", (name,))
         self.connection.commit()
-
-
+        print(f"Local DB: {name} marked as synced.")
 
     def setup_database(self):
         cursor = self.connection.cursor()
 
-        # 1. Create the NEW table (e.g., game_history)
-        # This tracks every single game played, not just the high scores
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS game_history (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                word_played TEXT,
-                result TEXT, -- 'Win' or 'Loss'
-                date_played TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-
-        # 2. Ensure the LIDERBOARD table is correct
-        # We use IF NOT EXISTS so it doesn't crash if it's already there
+        # 1. Create the Liderboard with all necessary columns
+        # We include UNIQUE(name) so the 'ON CONFLICT' logic works!
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS liderboard (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
+                name TEXT UNIQUE,
                 score INTEGER DEFAULT 0,
-                time TEXT, -- Stores how long it took to win
-                date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                time TEXT,
+                is_synced INTEGER DEFAULT 0
             )
         """)
 
-        # 3. MIGRATION EXAMPLE:
-        # If you wanted to move a specific player from a 'Guest' name 
-        # to a specific name in your new structure:
-        cursor.execute("UPDATE liderboard SET name = 'Champion' WHERE score > 1000 AND name = 'Guest'")
+        # 2. Migration: Add 'is_synced' if user is updating from a very old version
+        try:
+            cursor.execute("ALTER TABLE liderboard ADD COLUMN is_synced INTEGER DEFAULT 0")
+        except:
+            pass # Column already exists, no problem
+
+        # 3. Create the Game Settings table
+        cursor.execute("CREATE TABLE IF NOT EXISTS game (time_choice INTEGER)")
+
+        # 4. Ensure Game Settings has default data (Prevent IndexError on new PCs)
+        cursor.execute("SELECT COUNT(*) FROM game")
+        if cursor.fetchone()[0] == 0:
+            cursor.execute("INSERT INTO game (time_choice) VALUES (600)")
 
         self.connection.commit()
-        print("Migration complete: 'liderboard' verified and 'game_history' added.")
+        print("Database ready: Liderboard and Settings initialized.")
     
 
 # db = DB()

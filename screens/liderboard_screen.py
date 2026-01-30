@@ -8,26 +8,63 @@ from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 
+from firebase import OnlineLeaderboard
+
 class LiderboardScreen(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
         self.db = DB()
         self.board_grid = Board()
         self.add_widget(self.board_grid)
+        self.online_liderboard = OnlineLeaderboard()
 
 
     def get_liderboard(self):
-        data = self.db.get_liderboard()
-        return data
+        self.online_liderboard = OnlineLeaderboard()
+        
+        # We do NOT assign to a variable. 
+        # We just "fire and forget" and let process_data handle the result later.
+        self.online_liderboard.fetch_scores(self.process_data)
+        
+        print("Fetch started... but data isn't here yet!")
 
     def on_enter(self, *args):
-        data = self.get_liderboard()
-        # print(data)
-        self.board_grid.populate(data)
-        # Clock.schedule_once(lambda x:,2)
+        # Just start the process. Don't try to use 'data' here.
+        self.get_liderboard()
+
+    def get_liderboard(self):
+        self.online_liderboard = OnlineLeaderboard()
+        self.online_liderboard.fetch_scores(self.process_data)
+
+    def process_data(self, data):
+        if data is None:
+            print("Failed to get data.")
+            return
+
+        # 1. Convert dict to a list and sort it (Highest score first)
+        leaderboard_list = list(data.values())
+        leaderboard_list.sort(key=lambda x: int(x.get('score', 0)), reverse=True)
+
+        # 2. NOW update the UI
+        # Since this function runs when the data arrives, 
+        # the grid will fill up automatically!
+        self.board_grid.populate(leaderboard_list)
+        print("UI populated with fetched data.")
+
+
+
+
 
 from kivy.uix.scrollview import ScrollView
 from kivy.metrics import dp
+import os
+import sys
+
+def resource_path( relative_path):
+    if hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
+
 
 # ---------- Helper ----------
 def make_label(text, align="center"):
@@ -51,7 +88,7 @@ class Board(BoxLayout):
         top_bar = BoxLayout(size_hint_y=None, height=dp(40))
 
         back_btn = Button(
-            text="← Back",
+            text="Back",
             size_hint_x=None,
             width=dp(100)
         )
@@ -92,12 +129,28 @@ class Board(BoxLayout):
         self.rows.clear_widgets()
 
         if not data:
-            self.rows.add_widget(Label(text="No scores yet"))
-            self.rows.add_widget(Label(text=""))
-            self.rows.add_widget(Label(text=""))
+            # Fill the row so it doesn't look empty
+            for _ in range(3):
+                self.rows.add_widget(Label(text="--", font_name=resource_path('assets/BPG2.ttf')))
             return
 
-        for score, name, play_time in data:
-            self.rows.add_widget(Label(text=str(name), halign="left"))
-            self.rows.add_widget(Label(text=str(score)))
-            self.rows.add_widget(Label(text=str(play_time)))
+        # Dictionary to map seconds to display strings
+        times_map = {
+            "600": "10:00",
+            "300": "5:00",
+            "180": "3:00"
+        }
+
+        for entry in data:
+            # Extract values from the dictionary safely
+            name = entry.get('name', 'Unknown')
+            score = entry.get('score', 0)
+            play_time_raw = str(entry.get('time', ''))
+
+            # Get formatted time from map, or use the raw value if not found
+            display_time = times_map.get(play_time_raw, play_time_raw)
+            
+            # Add widgets to the grid
+            self.rows.add_widget(Label(text=str(name), halign="left", font_name=resource_path('assets/BPG2.ttf')))
+            self.rows.add_widget(Label(text=str(score), font_name=resource_path('assets/BPG2.ttf')))
+            self.rows.add_widget(Label(text=display_time, font_name=resource_path('assets/BPG2.ttf')))

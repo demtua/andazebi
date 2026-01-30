@@ -10,7 +10,7 @@ a = Analysis(
         ('assets', 'assets'),
         ('DB', 'DB'),
         ('hangman.kv', '.'),
-        ('menu_screen.kv', './screens'),  # This grabs all .kv files inside the screens folder
+        ('screens/menu_screen.kv', '.'),  # This grabs all .kv files inside the screens folder
     ],
     hiddenimports=[],
     hookspath=[],

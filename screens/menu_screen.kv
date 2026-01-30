@@ -1,4 +1,5 @@
 <MenuScreen>:
+    timer:timer
     name:'menu_screen'
     BoxLayout:
         orientation:'vertical'
@@ -22,9 +23,10 @@
                 valign: "middle"
                 text_size: self.size
             Spinner:
+                id:timer
                 size_hint:1, 0.8
                 text: "5:00"
-                values: ["10:00", "5:00", "3:00" ]
+                values: app.times.keys()
                 on_text: app.on_time_select(self.text)
                 font_name:app.resource_path('assets/BPG2.ttf')
 

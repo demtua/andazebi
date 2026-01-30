@@ -49,6 +49,7 @@ class GameScreen(Screen):
         self.time_left = App.get_running_app().timer_time 
         self.start_timer()
         self.start_game()
+        self.score = 0
 
 
     def start_timer(self):
@@ -112,6 +113,9 @@ class GameScreen(Screen):
         # self.keyboard.clear_widgets() 
         self.add_keyboard()
         self.start_timer()
+
+    def on_leave(self, *args):
+        self.stop_timer()
 
     def add_keyboard(self):
         # This is the main container for all your rows
