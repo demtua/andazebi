@@ -33,7 +33,7 @@ def get_kv_path(filename):
 Builder.load_file(get_kv_path('menu_screen.kv'))
 class HangmanApp(App):
     
-    timer_time = NumericProperty(600)
+    timer_time = NumericProperty(5)
     
 
     def build(self):

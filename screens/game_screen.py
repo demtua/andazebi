@@ -111,11 +111,13 @@ class GameScreen(Screen):
         # This runs every time you switch to this screen
         # Clear it first so you don't get double keyboards if you exit/re-enter
         # self.keyboard.clear_widgets() 
-        self.add_keyboard()
+        # self.add_keyboard()
+        self.start_game()
         self.start_timer()
 
     def on_leave(self, *args):
         self.stop_timer()
+        self.score = 0
 
     def add_keyboard(self):
         # This is the main container for all your rows
@@ -126,38 +128,35 @@ class GameScreen(Screen):
         keyboard_layout.orientation = 'vertical'
         keyboard_layout.spacing = dp(5)
 
-        row1 = "ქ,წ,ე,რ,ტ,ყ,უ,ი,ო,პ".split(',')
-        row2 = "ა,ს,დ,ფ,გ,ჰ,ჯ,კ,ლ".split(',')
-        row3 = "ზ,ხ,ც,ვ,ბ,ნ,მ,შ,ჩ,ღ,თ,ძ,ჭ,ჟ".split(',')
+        # 1. Define the full Georgian alphabet row
+        row_data = "ა,ბ,გ,დ,ე,ვ,ზ,თ,ი,კ,ლ,მ,ნ,ო,პ,ჟ,რ,ს,ტ,უ,ფ,ქ,ღ,ყ,შ,ჩ,ც,ძ,წ,ჭ,ხ,ჯ,ჰ".split(',')
 
-        all_rows = [row1, row2, row3]
+        # 2. Create the container for the single row
+        row_container = BoxLayout(
+            orientation='horizontal',
+            spacing=dp(3), # Reduced spacing to fit more keys
+            size_hint=(None, None),
+            height=dp(45),
+            pos_hint={'center_x': 0.5}
+        )
 
-        for row_data in all_rows:
-            # 1. Create a standard BoxLayout (or MDBoxLayout)
-            row_container = BoxLayout(
-                orientation='horizontal',
-                spacing=dp(3),
-                size_hint=(None, None),  # Disable auto-scaling
-                height=dp(45),
-                pos_hint={'center_x': 0.5} # This only works if size_hint_x is None
+        # Keep the width adaptive to the number of buttons
+        row_container.bind(minimum_width=row_container.setter('width'))
+
+        for char in row_data:
+            key = Button(
+                text=char,
+                font_name=self.resource_path('assets/BPG2.ttf'),
+                
+                font_size='16sp', # Slightly smaller font
+                size_hint=(None, None),
+                size=(dp(40), dp(35)) # Slightly narrower buttons (30dp instead of 35dp)
             )
+            key.bind(on_release=self.button_press)
+            row_container.add_widget(key)
 
-            # 2. This is the manual version of 'adaptive_width'
-            # It tells the container: "Stay exactly as wide as the buttons inside you"
-            row_container.bind(minimum_width=row_container.setter('width'))
-
-            for char in row_data:
-                key = Button(
-                    text=char,
-                    font_name=self.resource_path('assets/BPG2.ttf'),
-                    font_size='18sp',
-                    size_hint=(None, None),
-                    size=(dp(35), dp(45))
-                )
-                key.bind(on_release=self.button_press)
-                row_container.add_widget(key)
-
-            keyboard_layout.add_widget(row_container)
+        # 3. Add to your main keyboard layout
+        keyboard_layout.add_widget(row_container)
     
     def lose(self):
         self.notifier.title = 'წააგე'

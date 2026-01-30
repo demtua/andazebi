@@ -89,8 +89,10 @@ class Board(BoxLayout):
 
         back_btn = Button(
             text="Back",
-            size_hint_x=None,
-            width=dp(100)
+            size_hint=(None,None),
+            background_normal=resource_path('assets/timer.png'),
+            size=(dp(100), dp(65)),
+            pos_hint={"top":1}
         )
         back_btn.bind(on_release=self.go_back)
 

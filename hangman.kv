@@ -1,10 +1,11 @@
 
 <GameScreen>:
     Button:
-        size_hint:0.1,None
+        size_hint:0.15,None
         pos_hint:{"top":1}
-        height:dp(50)
+        height:dp(65)
         text:'back'
+        background_normal:app.resource_path('assets/timer.png')
         on_release:app.sm.switch_to(app.menu_screen)
     BoxLayout:
         orientation: 'vertical'
@@ -43,7 +44,10 @@
 
         BoxLayout:
             id: keyboard_layout
-            size_hint_y: 0.4
+            size_hint_y: 0.1
+        Widget:
+            size_hint:1,None
+            height:dp(60)
 
             
 

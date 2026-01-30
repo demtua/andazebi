@@ -85,7 +85,7 @@ class DB:
         self.connection.commit()
     
 
-    def add_score(self, score, name, play_time):
+    def add_score(self, name, score, play_time):
         # 1. Check if name exists
         self.cursor.execute('SELECT score FROM liderboard WHERE name = ?', (name,))
         result = self.cursor.fetchone()
@@ -108,7 +108,7 @@ class DB:
         self.connection.commit()
 
         if self.cursor.rowcount > 0:
-            self.online_manager.sync_score(name, score, play_time, self.mark_as_synced)
+            self.online_liderboard.sync_score(name, score, play_time, self.mark_as_synced)
             
     def get_all_andaza(self):
         self.cursor.execute('SELECT * FROM andaza')

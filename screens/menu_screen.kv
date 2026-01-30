@@ -3,29 +3,37 @@
     name:'menu_screen'
     BoxLayout:
         orientation:'vertical'
-        padding:dp(120),0,dp(120),dp(80)
+        padding:dp(120),0,dp(120),dp(160)
         spacing:dp(40)
         Image:
             source:app.resource_path('assets/bg.png')
             size_hint:1,0.4
         BoxLayout:
             orientation:'vertical'
-            padding:dp(50),dp(20)
+            padding:dp(80),dp(10)
             spacing:dp(20)
-            size_hint:1,None          
-            height:dp(120)
-            Label:
-                text: f'აირჩიეთ რაუნდის ხანგრძლივობა'
-                font_size: sp(12)
-                halign: "center"
-                size_hint:1, 0.2
-                font_name:'DejaVuSans.ttf'#app.resource_path('assets/BPG2.ttf')
-                valign: "middle"
-                text_size: self.size
+            pos_hint:{'center_x':0.5}
+            size_hint:0.7,None          
+            height:dp(50)
+            # Label:
+            #     text: f'აირჩიეთ რაუნდის ხანგრძლივობა'
+            #     font_size: sp(12)
+            #     halign: "center"
+            #     size_hint:1, 0.2
+            #     color:0.8,1,0.8,1
+            #     font_name:'DejaVuSans.ttf'#app.resource_path('assets/BPG2.ttf')
+            #     valign: "middle"
+            #     text_size: self.size
             Spinner:
                 id:timer
-                size_hint:1, 0.8
+                size_hint:1, None
+                height:dp(80)
                 text: "5:00"
+                size_hint: None, None
+                pos_hint:{'center_x':0.5}
+                size: 150, 80
+                color:0.8,1,0.8,1
+                background_normal:app.resource_path('assets/timer.png')
                 values: app.times.keys()
                 on_text: app.on_time_select(self.text)
                 font_name:app.resource_path('assets/BPG2.ttf')
@@ -33,17 +41,26 @@
         BoxLayout:
             orientation:"vertical"
             spacing:dp(10)
-            size_hint:1,0.4
-            height:dp(200)
+            size_hint:1,None
+            
+            size:dp(120), dp(200)
             Button:
                 text:'თამაშის დაწყება'
                 size_hint:1,None
-                height:dp(80)
+                background_normal:app.resource_path('assets/button.png')
+                height:dp(100)
                 on_release:app.sm.switch_to(app.game_screen)
+                size_hint: None, None
+                pos_hint:{'center_x':0.5}
+                size: 500, 100
                 font_name:app.resource_path('assets/BPG2.ttf')
             Button:
                 text:'ლიდერბორდი'
                 size_hint:1,None
-                height:dp(80)
+                size_hint: None, None
+                pos_hint:{'center_x':0.5}
+                size:500, 100
+                height:dp(100)
+                background_normal:app.resource_path('assets/button.png')
                 on_release:app.sm.switch_to(app.liderboard_screen)
                 font_name:app.resource_path('assets/BPG2.ttf')
