@@ -103,6 +103,7 @@
                 font_name:app.resource_path('assets/BPG2.ttf')
                 on_release:
                     app.db.add_score(name.text, root.score, app.timer_time)
+                    app.sm.switch_to(app.menu_screen)
                     root.dismiss()
             Button:
                 text:'თავიდან დაწყება'
